@@ -4,10 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Wallet extends Model
+class UserWallet extends Model
 {
     protected $fillable = [
-      'user_id', 'naira_amount', 'dollar_amount', 'pounds_amount'
+        'user_id', 'currency_id', 'balance'
     ];
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -15,4 +15,8 @@ class Wallet extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
 }

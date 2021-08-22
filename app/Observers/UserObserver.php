@@ -3,11 +3,11 @@
 namespace App\Observers;
 
 use App\User;
-use App\Wallet;
 use App\Transaction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Currency;
 
 class UserObserver
 {
@@ -23,14 +23,15 @@ class UserObserver
         try {
             DB::beginTransaction();
             $admin = User::find(1);
-            Wallet::create([
-                'user_id' => $user->id
-            ]);
+            $user->createWalletForCurrencies();
+            $usdCurrency = Currency::where('code', 'USD')->first();
             $transaction = Transaction::create([
                 'sender' => $admin->id,
                 'receiver' => $user->id,
+                'sender_currency' => $usdCurrency->id,
+                'receiver_currency' => $usdCurrency->id,
                 'amount_in_transaction_currency' => 1000,
-                'currency' => 'USD',
+                'rate_at_transaction' => $usdCurrency->rate,
                 'reference_code' => Str::random(20)
             ]);
             $transaction->createWalletHistory();
@@ -40,7 +41,7 @@ class UserObserver
             DB::rollBack();
             //TODO Notify admin and run a job that tries this action again
             Log::error('Failure', [
-                'data' => $e->getMessage(),
+                'data' => $e,
             ]);
         }
     }

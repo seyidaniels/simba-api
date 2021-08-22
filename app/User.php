@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Http\Traits\UserTransactionTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -10,16 +11,16 @@ use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable;
+    use Notifiable, UserTransactionTrait;
 
     protected $fillable = [
         'name',  'email' , 'password'
     ];
 
-    protected $appends = ['wallet'];
+    protected $appends = ['wallets'];
 
-    public function getWalletAttribute() {
-        return $this->wallet()->first();
+    public function getWalletsAttribute() {
+        return $this->wallets()->get();
     }
 
 
@@ -33,22 +34,6 @@ class User extends Authenticatable implements JWTSubject
     {
         $this->attributes['password'] = Hash::make($value);
     }
-
-
-    public function wallet(): \Illuminate\Database\Eloquent\Relations\HasOne
-    {
-        return $this->hasOne(Wallet::class);
-    }
-
-    public function walletHistory(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(WalletHistory::class);
-    }
-
-
-
-
-
     /**
      * Return a key value array, containing any custom claims to be added to the JWT.
      *
